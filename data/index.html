@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect to WiFi</title>
+    <script src="/config.js"></script>
+    <style>
+        body {
+            background: #222;
+            color: white;
+            display: inline-block;
+            margin: auto;
+            padding: 10px 50px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        html {
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            font-size: 18px;
+        }
+        button {
+            display: block;
+            margin: auto;
+            width: 100px;
+        }
+        input {
+            background-color: #eee;
+            border: 0;
+            outline: 0 !important;
+        }
+        table {
+            border-spacing: 20px 5px;
+        }
+    </style>
+    <script>
+        var use_ap, ap_ssid, ap_pass, wifi_ssid, wifi_pass, ntp_server, feed_interval, feed_duration, feed_offset, i = 9;
+
+        function fromTime(time) {
+            var vals = time.split(':');
+            return vals[0] * 3600 + vals[1] * 60;
+        }
+        function toTime(time) {
+            var hours = Math.floor(time / 3600) % 24 + '';
+            var minutes = Math.floor(time / 60) % 60 + '';
+            if (hours.length == 1) hours = '0' + hours;
+            if (minutes.length == 1) minutes = '0' + minutes;
+            return hours + ':' + minutes;
+        }
+
+        onload = function() {
+            use_ap = document.getElementById('use_ap');
+            ap_ssid = document.getElementById('ap_ssid');
+            ap_pass = document.getElementById('ap_pass');
+            wifi_ssid = document.getElementById('wifi_ssid');
+            wifi_pass = document.getElementById('wifi_pass');
+            ntp_server = document.getElementById('ntp_server');
+            feed_interval = document.getElementById('feed_interval');
+            feed_duration = document.getElementById('feed_duration');
+            feed_offset = document.getElementById('feed_offset');
+
+            var conf = getConfig() || {};
+            use_ap.checked = conf.use_ap;
+            ap_ssid.value = conf.ap_ssid;
+            ap_pass.value = conf.ap_pass;
+            wifi_ssid.value = conf.wifi_ssid;
+            wifi_pass.value = conf.wifi_pass;
+            ntp_server.value = conf.ntp_server;
+            feed_interval.value = conf.feed_interval;
+            feed_duration.value = conf.feed_duration;
+            feed_offset.value = toTime(conf.feed_offset);
+        }
+
+        function submit() {
+            var url = '/?';
+
+            url += 'use_ap=' + (use_ap.checked || false);
+            url += '&ap_ssid=' + (ap_ssid.value || '');
+            url += '&ap_pass=' + (ap_pass.value || '');
+            url += '&wifi_ssid=' + (wifi_ssid.value || '');
+            url += '&wifi_pass=' + (wifi_pass.value || '');
+            url += '&ntp_server=' + (ntp_server.value || '');
+            url += '&feed_interval=' + (feed_interval.value || '');
+            url += '&feed_duration=' + (feed_duration.value || '');
+            url += '&feed_offset=' + (fromTime(feed_offset.value) || '');
+
+            var req = new XMLHttpRequest();
+            req.open('POST', url);
+            req.send();
+
+            var i = 9;
+            setInterval(function() {
+                document.body.innerText = 'Please wait (' + i-- + ')...';
+            }, 1000);
+            setTimeout(function() {
+                window.location.href = '/';
+            }, 1000);
+        }
+    </script>
+</head>
+<body>
+    <h1>Feeder settings</h1>
+
+    <h2>Time settings:</h2>
+    <table>
+        <tr>
+            <td>Feed interval (seconds):</td>
+            <td><input type="number" id="feed_interval" placeholder="24"></td>
+        </tr>
+        <tr>
+            <td>Feed duration (milliseconds):</td>
+            <td><input type="number" id="feed_duration" placeholder="750"></td>
+        </tr>
+        <tr>
+            <td>Feed time:</td>
+            <td><input type="time" id="feed_offset"></td>
+        </tr>
+        <tr>
+            <td>NTP server:</td>
+            <td><input type="text" id="ntp_server" placeholder="0.pool.ntp.org"></td>
+        </tr>
+    </table>
+
+
+    <h2>WiFi settings:</h2>
+    <table>
+        <tr>
+            <td><label for="use_ap">Disable WiFi:</label></td>
+            <td><input type="checkbox" id="use_ap" name="use_ap"></td>
+        </tr>
+        <tr>
+            <td>SSID (Name):</td>
+            <td><input type="text" id="wifi_ssid"></td>
+        </tr>
+        <tr>
+            <td>Password:</td>
+            <td><input type="password" id="wifi_pass"></td>
+        </tr>
+    </table>
+
+    <h2>Access point settings:</h2>
+
+    <table>
+        <tr>
+            <td>SSID (Name):</td>
+            <td><input type="text" id="ap_ssid"></td>
+        </tr>
+        <tr>
+            <td>Password:</td>
+            <td><input type="password" id="ap_pass"></td>
+        </tr>
+    </table>
+
+    <br>
+
+    <button onclick="submit()">OK</button>
+</body>
+</html>

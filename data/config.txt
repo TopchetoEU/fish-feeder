@@ -1,0 +1,9 @@
+true
+NodeMCU
+password
+
+
+0.pool.ntp.org
+86400
+300
+68400
